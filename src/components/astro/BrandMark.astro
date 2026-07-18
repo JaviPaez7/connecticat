@@ -9,9 +9,9 @@ interface Props {
 const { size = 'md', showWordmark = true, onDark = false } = Astro.props;
 
 const sizes = {
-  sm: 'h-8 w-8 text-sm',
-  md: 'h-11 w-11 text-base',
-  lg: 'h-16 w-16 text-2xl',
+  sm: 'h-8 w-8',
+  md: 'h-11 w-11',
+  lg: 'h-16 w-16',
 };
 
 const wordSize = {
@@ -22,15 +22,17 @@ const wordSize = {
 ---
 
 <span class="inline-flex items-center gap-2.5">
-  <span
+  <img
+    src="/logo.svg"
+    alt=""
+    width="64"
+    height="64"
     class:list={[
-      'grid place-items-center rounded-2xl bg-gradient-to-br from-coral-400 via-apricot-400 to-mint-400 text-white shadow-lg shadow-coral-500/30',
+      'shrink-0 rounded-2xl shadow-lg shadow-coral-500/30',
       sizes[size],
     ]}
     aria-hidden="true"
-  >
-    <span class="font-display font-bold leading-none">C</span>
-  </span>
+  />
   {
     showWordmark && (
       <span
