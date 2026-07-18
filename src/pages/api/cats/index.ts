@@ -2,13 +2,14 @@ import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { getSession, setActiveCat } from '../../../lib/auth';
 import { prisma } from '../../../lib/db';
+import { mediaUrlSchema } from '../../../lib/media';
 
 const schema = z.object({
   name: z.string().min(1).max(60),
   breed: z.string().min(1).max(80),
   age: z.coerce.number().int().min(0).max(40),
   bio: z.string().max(400).default(''),
-  avatarUrl: z.string().url(),
+  avatarUrl: mediaUrlSchema,
   interests: z.array(z.string().min(1).max(60)).max(12).default([]),
 });
 

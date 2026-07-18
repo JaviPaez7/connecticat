@@ -2,9 +2,10 @@ import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { getSession } from '../../../lib/auth';
 import { prisma } from '../../../lib/db';
+import { mediaUrlSchema } from '../../../lib/media';
 
 const schema = z.object({
-  imageUrl: z.string().url(),
+  imageUrl: mediaUrlSchema,
   caption: z.string().max(500).default(''),
 });
 

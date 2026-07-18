@@ -31,7 +31,10 @@ services:
       DATABASE_URL: postgresql://connecticat:${POSTGRES_PASSWORD:-connecticat}@db:5432/connecticat?schema=public
       AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET required}
       PUBLIC_SITE_URL: https://connecticat.javistudio.dev
-      RUN_SEED: ${RUN_SEED:-true}
+      UPLOADS_DIR: /app/uploads
+      RUN_SEED: ${RUN_SEED:-false}
+    volumes:
+      - connecticat_uploads:/app/uploads
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=public-edge"
@@ -50,3 +53,4 @@ networks:
 
 volumes:
   connecticat_pg:
+  connecticat_uploads:

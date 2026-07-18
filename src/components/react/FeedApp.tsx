@@ -2,6 +2,7 @@ import { Heart, MessageCircle, Send } from 'lucide-react';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '../ui/Button';
+import ImageUploader from './ImageUploader';
 import { cn } from '@/lib/utils';
 
 export type FeedPost = {
@@ -27,19 +28,23 @@ export default function FeedApp({
   canInteract: boolean;
 }) {
   const [posts, setPosts] = useState(initialPosts);
-  const [imageUrl, setImageUrl] = useState(
-    'https://images.unsplash.com/photo-1511044568935-2d92d9c36e1f?w=900&h=900&fit=crop',
-  );
+  const [imageUrl, setImageUrl] = useState('');
   const [caption, setCaption] = useState('');
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
 
   async function publish() {
     if (!canInteract) {
       window.location.href = '/auth/login';
       return;
     }
+    if (!imageUrl) {
+      setError('Sube una foto primero');
+      return;
+    }
     setBusy(true);
+    setError('');
     const res = await fetch('/api/posts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -47,6 +52,10 @@ export default function FeedApp({
     });
     setBusy(false);
     if (res.ok) window.location.reload();
+    else {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error || 'No se pudo publicar');
+    }
   }
 
   async function toggleMeow(postId: string) {
@@ -104,11 +113,11 @@ export default function FeedApp({
         <div className="rounded-3xl border border-white/70 bg-white/70 p-5 shadow-sm backdrop-blur">
           <h2 className="font-display text-xl font-bold">Nueva publicación</h2>
           <div className="mt-3 space-y-3">
-            <input
-              className="w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold"
+            <ImageUploader
               value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="URL de imagen"
+              onChange={setImageUrl}
+              label="Sube tu foto"
+              aspect="wide"
             />
             <textarea
               className="w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm font-semibold"
@@ -117,8 +126,9 @@ export default function FeedApp({
               onChange={(e) => setCaption(e.target.value)}
               placeholder="Escribe un caption…"
             />
-            <Button onClick={publish} disabled={busy}>
-              Publicar en Catstagram
+            {error && <p className="text-sm font-bold text-coral-600">{error}</p>}
+            <Button onClick={publish} disabled={busy || !imageUrl}>
+              {busy ? 'Publicando…' : 'Publicar en Catstagram'}
             </Button>
           </div>
         </div>
@@ -140,7 +150,11 @@ export default function FeedApp({
               <p className="text-xs font-semibold text-ink-500">{post.cat.breed}</p>
             </div>
           </header>
-          <img src={post.imageUrl} alt={post.caption || post.cat.name} className="aspect-square w-full object-cover" />
+          <img
+            src={post.imageUrl}
+            alt={post.caption || post.cat.name}
+            className="aspect-square w-full object-cover"
+          />
           <div className="space-y-3 px-4 py-4">
             <div className="flex items-center gap-3">
               <motion.button

@@ -11,6 +11,11 @@ export default defineConfig({
   output: 'server',
   adapter: node({ mode: 'standalone' }),
   integrations: [react()],
+  // Behind Traefik, Origin (https) can disagree with the internal request URL (http).
+  // Browser uploads would otherwise get 403 "Cross-site POST form submissions are forbidden".
+  security: {
+    checkOrigin: false,
+  },
   vite: {
     plugins: [tailwindcss()],
     resolve: {
@@ -20,3 +25,4 @@ export default defineConfig({
     },
   },
 });
+

@@ -201,8 +201,59 @@ async function main() {
     });
   }
 
+  const extra = [
+    {
+      email: 'mico@connecticat.dev',
+      name: 'Mico Owner',
+      cat: {
+        name: 'Mico',
+        breed: 'Orange Tabby',
+        age: 2,
+        bio: 'Travieso profesional y fan del atún.',
+        avatarUrl: avatars[5],
+        interests: ['cajas', 'madrugar', 'perseguir sombras'],
+      },
+    },
+    {
+      email: 'holly@connecticat.dev',
+      name: 'Holly Owner',
+      cat: {
+        name: 'Holly',
+        breed: 'Calico',
+        age: 3,
+        bio: 'Elegante, curiosa y un poco diva.',
+        avatarUrl: avatars[2],
+        interests: ['ventanas', 'mimos selectivos', 'cajas premium'],
+      },
+    },
+    {
+      email: 'lucky@connecticat.dev',
+      name: 'Lucky Owner',
+      cat: {
+        name: 'Lucky',
+        breed: 'Tuxedo',
+        age: 4,
+        bio: 'Afortunado en snacks y siestas largas.',
+        avatarUrl: avatars[4],
+        interests: ['yogur', 'sofá', 'odiar la aspiradora'],
+      },
+    },
+  ] as const;
+
+  for (const item of extra) {
+    await prisma.user.create({
+      data: {
+        email: item.email,
+        name: item.name,
+        passwordHash,
+        catProfiles: { create: item.cat },
+      },
+    });
+  }
+
   console.log('Seed OK');
-  console.log('Demo login: luna@connecticat.dev / miau1234');
+  console.log('Demo logins (password miau1234):');
+  console.log('  luna@ / michi@ / nala@ / olive@ / mico@ / holly@ / lucky@ connecticat.dev');
 }
 
 main()

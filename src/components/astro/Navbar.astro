@@ -6,9 +6,10 @@ import { navLinks } from '../../lib/site';
 
 interface Props {
   session: SessionContext | null;
+  overlay?: boolean;
 }
 
-const { session } = Astro.props;
+const { session, overlay = false } = Astro.props;
 const path = Astro.url.pathname;
 
 const icons = {
@@ -19,7 +20,14 @@ const icons = {
 } as const;
 ---
 
-<header class="sticky top-0 z-50 border-b border-white/60 bg-white/70 backdrop-blur-xl">
+<header
+  class:list={[
+    'z-50 border-b backdrop-blur-xl',
+    overlay
+      ? 'border-white/10 bg-ink-900/35 text-white'
+      : 'sticky top-0 border-white/60 bg-white/70',
+  ]}
+>
   <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
     <a href="/" class="shrink-0" aria-label="Connecticat inicio">
       <BrandMark size="sm" />
@@ -35,9 +43,13 @@ const icons = {
               href={link.href}
               class:list={[
                 'inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-bold transition',
-                active
-                  ? 'bg-coral-100 text-coral-700'
-                  : 'text-ink-700 hover:bg-white hover:text-coral-600',
+                overlay
+                  ? active
+                    ? 'bg-white/20 text-white'
+                    : 'text-white/85 hover:bg-white/10 hover:text-white'
+                  : active
+                    ? 'bg-coral-100 text-coral-700'
+                    : 'text-ink-700 hover:bg-white hover:text-coral-600',
               ]}
             >
               {Icon && <Icon class="h-4 w-4" />}
@@ -55,7 +67,10 @@ const icons = {
             {session.activeCat && (
               <a
                 href="/perfil"
-                class="hidden items-center gap-2 rounded-xl bg-white/80 px-2.5 py-1.5 text-sm font-bold text-ink-700 shadow-sm sm:inline-flex"
+                class:list={[
+                  'hidden items-center gap-2 rounded-xl px-2.5 py-1.5 text-sm font-bold shadow-sm sm:inline-flex',
+                  overlay ? 'bg-white/15 text-white' : 'bg-white/80 text-ink-700',
+                ]}
               >
                 <img
                   src={session.activeCat.avatarUrl}
@@ -67,7 +82,12 @@ const icons = {
             )}
             <a
               href="/perfil"
-              class="inline-flex items-center gap-1.5 rounded-xl bg-ink-900 px-3 py-2 text-sm font-bold text-white transition hover:bg-coral-600"
+              class:list={[
+                'inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-bold transition',
+                overlay
+                  ? 'bg-white text-ink-900 hover:bg-coral-100'
+                  : 'bg-ink-900 text-white hover:bg-coral-600',
+              ]}
             >
               <UserRound class="h-4 w-4" />
               <span class="hidden sm:inline">Perfil</span>
@@ -76,7 +96,12 @@ const icons = {
         ) : (
           <a
             href="/auth/login"
-            class="inline-flex items-center gap-1.5 rounded-xl bg-ink-900 px-3 py-2 text-sm font-bold text-white transition hover:bg-coral-600"
+            class:list={[
+              'inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-bold transition',
+              overlay
+                ? 'bg-white text-ink-900 hover:bg-coral-100'
+                : 'bg-ink-900 text-white hover:bg-coral-600',
+            ]}
           >
             <LogIn class="h-4 w-4" />
             Entrar
@@ -86,9 +111,11 @@ const icons = {
     </div>
   </div>
 
-  <!-- Mobile nav -->
   <nav
-    class="flex gap-1 overflow-x-auto border-t border-white/50 px-2 py-2 md:hidden"
+    class:list={[
+      'flex gap-1 overflow-x-auto px-2 py-2 md:hidden',
+      overlay ? 'border-t border-white/10' : 'border-t border-white/50',
+    ]}
     aria-label="Móvil"
   >
     {
@@ -100,7 +127,13 @@ const icons = {
             href={link.href}
             class:list={[
               'inline-flex shrink-0 items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold',
-              active ? 'bg-coral-100 text-coral-700' : 'text-ink-600',
+              overlay
+                ? active
+                  ? 'bg-white/20 text-white'
+                  : 'text-white/80'
+                : active
+                  ? 'bg-coral-100 text-coral-700'
+                  : 'text-ink-600',
             ]}
           >
             {Icon && <Icon class="h-3.5 w-3.5" />}
@@ -111,7 +144,10 @@ const icons = {
     }
     <a
       href={session ? '/perfil' : '/auth/login'}
-      class="inline-flex shrink-0 items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold text-ink-600"
+      class:list={[
+        'inline-flex shrink-0 items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold',
+        overlay ? 'text-white/80' : 'text-ink-600',
+      ]}
     >
       <PawPrint class="h-3.5 w-3.5" />
       {session ? 'Perfil' : 'Auth'}

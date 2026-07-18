@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+mkdir -p "${UPLOADS_DIR:-/app/uploads}"
+
 echo "[connecticat] Running Prisma migrations…"
 npx prisma migrate deploy
 
