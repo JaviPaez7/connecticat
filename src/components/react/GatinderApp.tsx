@@ -78,20 +78,27 @@ export default function GatinderApp({ canPlay }: { canPlay: boolean }) {
           {current ? (
             <motion.div
               key={current.id}
-              className="absolute inset-0 overflow-hidden rounded-[2rem] border border-white/80 bg-white shadow-xl"
+              className="absolute inset-0 touch-none select-none overflow-hidden rounded-[2rem] border border-white/80 bg-white shadow-xl"
+              style={{ touchAction: 'none' }}
               initial={{ scale: 0.96, opacity: 0 }}
               animate={{ x: 0, opacity: 1, scale: 1, rotate: 0 }}
               exit={{ x: exitX, opacity: 0, rotate: exitX > 0 ? 12 : -12 }}
               transition={{ type: 'spring', stiffness: 260, damping: 22 }}
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.9}
               onDragEnd={(_, info) => {
-                if (info.offset.x > 120) void swipe('like');
-                else if (info.offset.x < -120) void swipe('dislike');
+                if (info.offset.x > 100 || info.velocity.x > 500) void swipe('like');
+                else if (info.offset.x < -100 || info.velocity.x < -500) void swipe('dislike');
               }}
             >
-              <img src={current.avatarUrl} alt={current.name} className="h-[62%] w-full object-cover" />
-              <div className="space-y-2 p-5">
+              <img
+                src={current.avatarUrl}
+                alt={current.name}
+                draggable={false}
+                className="pointer-events-none h-[62%] w-full select-none object-cover"
+              />
+              <div className="pointer-events-none space-y-2 p-5">
                 <h2 className="font-display text-3xl font-bold text-ink-900">
                   {current.name}, {current.age}
                 </h2>

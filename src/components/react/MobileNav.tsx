@@ -10,6 +10,7 @@ import {
   X,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 
 const links = [
@@ -52,6 +53,11 @@ type Props = {
 
 export default function MobileNav({ overlay = false, pathname, loggedIn, activeCat }: Props) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
@@ -68,30 +74,16 @@ export default function MobileNav({ overlay = false, pathname, loggedIn, activeC
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  return (
-    <div className="md:hidden">
-      <button
-        type="button"
-        aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-        className={cn(
-          'inline-flex h-10 w-10 items-center justify-center rounded-xl transition',
-          overlay
-            ? 'bg-white/15 text-white hover:bg-white/25'
-            : 'bg-ink-900/5 text-ink-900 hover:bg-ink-900/10',
-        )}
-      >
-        {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </button>
-
+  const drawer =
+    mounted &&
+    createPortal(
       <AnimatePresence>
         {open && (
           <>
             <motion.button
               type="button"
               aria-label="Cerrar menú"
-              className="fixed inset-0 z-[80] bg-ink-900/55 backdrop-blur-sm"
+              className="fixed inset-0 z-[200] bg-ink-900/60 backdrop-blur-sm"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -99,7 +91,7 @@ export default function MobileNav({ overlay = false, pathname, loggedIn, activeC
             />
 
             <motion.aside
-              className="fixed inset-y-0 right-0 z-[90] flex w-[min(22rem,88vw)] flex-col overflow-hidden border-l border-white/10 bg-ink-900 shadow-2xl"
+              className="fixed inset-y-0 right-0 z-[210] flex w-[min(22rem,88vw)] flex-col overflow-hidden border-l border-white/10 bg-ink-900 shadow-2xl"
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
@@ -157,7 +149,12 @@ export default function MobileNav({ overlay = false, pathname, loggedIn, activeC
                       onClick={() => setOpen(false)}
                       initial={{ opacity: 0, x: 24 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.06 + i * 0.05, type: 'spring', stiffness: 280, damping: 22 }}
+                      transition={{
+                        delay: 0.06 + i * 0.05,
+                        type: 'spring',
+                        stiffness: 280,
+                        damping: 22,
+                      }}
                       className={cn(
                         'group flex items-center gap-3 rounded-2xl border px-3 py-3 transition',
                         active
@@ -217,7 +214,27 @@ export default function MobileNav({ overlay = false, pathname, loggedIn, activeC
             </motion.aside>
           </>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body,
+    );
+
+  return (
+    <div className="md:hidden">
+      <button
+        type="button"
+        aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className={cn(
+          'relative z-[220] inline-flex h-10 w-10 items-center justify-center rounded-xl transition',
+          overlay
+            ? 'bg-white/15 text-white hover:bg-white/25'
+            : 'bg-ink-900/5 text-ink-900 hover:bg-ink-900/10',
+        )}
+      >
+        {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+      </button>
+      {drawer}
     </div>
   );
 }
