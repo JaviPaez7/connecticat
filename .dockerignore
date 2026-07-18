@@ -1,0 +1,13 @@
+node_modules
+dist
+.astro
+.git
+.env
+.env.*
+!.env.example
+generated
+*.md
+docs
+.vscode
+AGENTS.md
+CLAUDE.md

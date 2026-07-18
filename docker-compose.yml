@@ -5,10 +5,8 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: connecticat
-      POSTGRES_PASSWORD: connecticat
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-connecticat}
       POSTGRES_DB: connecticat
-    ports:
-      - '5433:5432'
     volumes:
       - connecticat_pg:/var/lib/postgresql/data
     healthcheck:
@@ -16,6 +14,39 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - internal
+
+  app:
+    build: .
+    container_name: connecticat-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 4321
+      DATABASE_URL: postgresql://connecticat:${POSTGRES_PASSWORD:-connecticat}@db:5432/connecticat?schema=public
+      AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET required}
+      PUBLIC_SITE_URL: https://connecticat.javistudio.dev
+      RUN_SEED: ${RUN_SEED:-true}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=public-edge"
+      - "traefik.http.routers.connecticat.rule=Host(`connecticat.javistudio.dev`)"
+      - "traefik.http.routers.connecticat.entrypoints=websecure"
+      - "traefik.http.routers.connecticat.tls.certresolver=le"
+      - "traefik.http.services.connecticat.loadbalancer.server.port=4321"
+    networks:
+      - internal
+      - public-edge
+
+networks:
+  internal:
+  public-edge:
+    external: true
 
 volumes:
   connecticat_pg:
