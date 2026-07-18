@@ -3,47 +3,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Navbar from '../components/astro/Navbar.astro';
 import Footer from '../components/astro/Footer.astro';
 import HeroLanding from '../components/react/HeroLanding';
+import FeatureSections from '../components/react/FeatureSections';
 import { getSession } from '../lib/auth';
 
 const session = await getSession(Astro.cookies);
-
-const modules = [
-  { href: '/feed', title: 'Catstagram', copy: 'Meows, posts y galerías' },
-  { href: '/gatinder', title: 'Gatinder', copy: 'Swipe y ¡Hay Match!' },
-  { href: '/curiosidades', title: 'Curiosidades', copy: 'Hábitos y tips SEO' },
-  { href: '/foro', title: 'Purr-Foro', copy: 'Comunidad y votos' },
-];
 ---
 
 <BaseLayout>
   <div class="flex min-h-screen flex-col">
     <Navbar session={session} />
-
     <HeroLanding client:load />
-
-    <section class="relative z-10 mx-auto w-full max-w-6xl flex-1 px-4 py-14 sm:px-6">
-      <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {
-          modules.map((item, i) => (
-            <li
-              class="opacity-0 animate-fade-up"
-              style={`animation-delay: ${0.08 + i * 0.08}s; animation-fill-mode: both`}
-            >
-              <a
-                href={item.href}
-                class="group block rounded-3xl border border-white/70 bg-white/70 p-5 shadow-sm backdrop-blur transition duration-300 hover:-translate-y-1.5 hover:border-coral-200 hover:bg-white hover:shadow-lg"
-              >
-                <h2 class="font-display text-lg font-bold text-ink-900 transition group-hover:text-coral-600">
-                  {item.title}
-                </h2>
-                <p class="mt-1 text-sm font-semibold text-ink-500">{item.copy}</p>
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </section>
-
+    <FeatureSections client:visible />
     <Footer />
   </div>
 </BaseLayout>
