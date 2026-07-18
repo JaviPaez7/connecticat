@@ -2,21 +2,29 @@
 interface Props {
   size?: 'sm' | 'md' | 'lg';
   showWordmark?: boolean;
+  /** Use on dark backgrounds (navbar overlay, footer). */
+  onDark?: boolean;
 }
 
-const { size = 'md', showWordmark = true } = Astro.props;
+const { size = 'md', showWordmark = true, onDark = false } = Astro.props;
 
 const sizes = {
   sm: 'h-8 w-8 text-sm',
   md: 'h-11 w-11 text-base',
   lg: 'h-16 w-16 text-2xl',
 };
+
+const wordSize = {
+  sm: 'text-xl',
+  md: 'text-2xl',
+  lg: 'text-3xl',
+};
 ---
 
 <span class="inline-flex items-center gap-2.5">
   <span
     class:list={[
-      'grid place-items-center rounded-2xl bg-gradient-to-br from-coral-400 via-apricot-400 to-mint-400 text-white shadow-lg shadow-coral-300/40 animate-paw-pop',
+      'grid place-items-center rounded-2xl bg-gradient-to-br from-coral-400 via-apricot-400 to-mint-400 text-white shadow-lg shadow-coral-500/30',
       sizes[size],
     ]}
     aria-hidden="true"
@@ -25,8 +33,14 @@ const sizes = {
   </span>
   {
     showWordmark && (
-      <span class="font-display text-2xl font-bold tracking-tight text-ink-900">
-        Connecti<span class="text-coral-500">cat</span>
+      <span
+        class:list={[
+          'font-display font-bold tracking-tight',
+          wordSize[size],
+          onDark ? 'text-white' : 'text-ink-900',
+        ]}
+      >
+        Connecti<span class={onDark ? 'text-coral-300' : 'text-coral-500'}>cat</span>
       </span>
     )
   }
