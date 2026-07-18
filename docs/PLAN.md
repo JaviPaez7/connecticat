@@ -79,3 +79,9 @@ prisma/                 # schema + migrations (Paso 2)
 ## 6. Criterio de “listo” por paso
 
 Cada paso debe: compilar (`npm run build`), quedar commiteado en GitHub, y no mezclar alcance del siguiente paso.
+
+---
+
+## 7. Estado (2026-07-18)
+
+Pasos 1–8 **completados** en el repo. Demo seed activa. Build SSR con `@astrojs/node` verificado.

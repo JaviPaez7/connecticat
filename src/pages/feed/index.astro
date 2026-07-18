@@ -1,13 +1,52 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import MainLayout from '../../layouts/MainLayout.astro';
+import FeedApp, { type FeedPost } from '../../components/react/FeedApp';
+import { getSession } from '../../lib/auth';
+import { prisma } from '../../lib/db';
+
+const session = await getSession(Astro.cookies);
+
+const rows = await prisma.post.findMany({
+  orderBy: { createdAt: 'desc' },
+  take: 40,
+  include: {
+    catProfile: { select: { id: true, name: true, avatarUrl: true, breed: true } },
+    likes: true,
+    comments: {
+      orderBy: { createdAt: 'asc' },
+      include: {
+        catProfile: { select: { id: true, name: true, avatarUrl: true } },
+      },
+    },
+  },
+});
+
+const activeId = session?.activeCat?.id;
+const posts: FeedPost[] = rows.map((p) => ({
+  id: p.id,
+  imageUrl: p.imageUrl,
+  caption: p.caption,
+  createdAt: p.createdAt.toISOString(),
+  likeCount: p.likes.length,
+  likedByMe: activeId ? p.likes.some((l) => l.catProfileId === activeId) : false,
+  cat: {
+    id: p.catProfile.id,
+    name: p.catProfile.name,
+    avatarUrl: p.catProfile.avatarUrl,
+    breed: p.catProfile.breed,
+  },
+  comments: p.comments.map((c) => ({
+    id: c.id,
+    content: c.content,
+    cat: c.catProfile,
+  })),
+}));
 ---
 
-<BaseLayout title="Catstagram">
-  <main class="mx-auto max-w-3xl px-6 py-16">
-    <h1 class="font-display text-4xl font-bold text-ink-900">Catstagram</h1>
-    <p class="mt-3 font-semibold text-ink-500">
-      Placeholder · Feed público con Meows y comentarios (Paso 5).
-    </p>
-    <a href="/" class="mt-8 inline-block font-bold text-coral-600 hover:underline">← Volver</a>
-  </main>
-</BaseLayout>
+<MainLayout title="Catstagram">
+  <div class="mb-8 text-center">
+    <h1 class="font-display text-4xl font-bold">Catstagram</h1>
+    <p class="mt-2 font-semibold text-ink-500">El muro felino. Da Meow y comenta.</p>
+  </div>
+  <FeedApp client:load initialPosts={posts} canInteract={Boolean(session?.activeCat)} />
+</MainLayout>

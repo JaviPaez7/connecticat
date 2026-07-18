@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SwipeType {
+  like
+  dislike
+}
+
+enum ForumCategory {
+  salud
+  anecdotas
+  productos
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  catProfiles  CatProfile[]
+  sessions     Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model CatProfile {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  breed     String
+  age       Int
+  bio       String   @default("")
+  avatarUrl String
+  interests String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  posts   Post[]
+  likes   Like[]
+  comments Comment[]
+  threads ForumThread[]
+  replies ForumReply[]
+  votes   ForumVote[]
+
+  swipesGiven    Swipe[] @relation("Swiper")
+  swipesReceived Swipe[] @relation("Swiped")
+  matchesAsOne   Match[] @relation("MatchOne")
+  matchesAsTwo   Match[] @relation("MatchTwo")
+
+  @@index([userId])
+}
+
+model Post {
+  id           String   @id @default(cuid())
+  catProfileId String
+  imageUrl     String
+  caption      String   @default("")
+  createdAt    DateTime @default(now())
+
+  catProfile CatProfile @relation(fields: [catProfileId], references: [id], onDelete: Cascade)
+  likes      Like[]
+  comments   Comment[]
+
+  @@index([catProfileId])
+  @@index([createdAt])
+}
+
+model Comment {
+  id           String   @id @default(cuid())
+  postId       String
+  catProfileId String
+  content      String
+  createdAt    DateTime @default(now())
+
+  post       Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  catProfile CatProfile @relation(fields: [catProfileId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+}
+
+model Like {
+  id           String   @id @default(cuid())
+  postId       String
+  catProfileId String
+  createdAt    DateTime @default(now())
+
+  post       Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  catProfile CatProfile @relation(fields: [catProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, catProfileId])
+  @@index([postId])
+}
+
+model Swipe {
+  id        String    @id @default(cuid())
+  swiperId  String
+  swipedId  String
+  type      SwipeType
+  createdAt DateTime  @default(now())
+
+  swiper CatProfile @relation("Swiper", fields: [swiperId], references: [id], onDelete: Cascade)
+  swiped CatProfile @relation("Swiped", fields: [swipedId], references: [id], onDelete: Cascade)
+
+  @@unique([swiperId, swipedId])
+  @@index([swipedId])
+}
+
+model Match {
+  id        String   @id @default(cuid())
+  catOneId  String
+  catTwoId  String
+  createdAt DateTime @default(now())
+
+  catOne CatProfile @relation("MatchOne", fields: [catOneId], references: [id], onDelete: Cascade)
+  catTwo CatProfile @relation("MatchTwo", fields: [catTwoId], references: [id], onDelete: Cascade)
+
+  @@unique([catOneId, catTwoId])
+  @@index([catTwoId])
+}
+
+model ForumThread {
+  id           String        @id @default(cuid())
+  catProfileId String
+  title        String
+  content      String
+  category     ForumCategory
+  tags         String[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  catProfile CatProfile   @relation(fields: [catProfileId], references: [id], onDelete: Cascade)
+  replies    ForumReply[]
+
+  @@index([category])
+  @@index([createdAt])
+}
+
+model ForumReply {
+  id           String   @id @default(cuid())
+  threadId     String
+  catProfileId String
+  content      String
+  createdAt    DateTime @default(now())
+
+  thread     ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  catProfile CatProfile  @relation(fields: [catProfileId], references: [id], onDelete: Cascade)
+  votes      ForumVote[]
+
+  @@index([threadId])
+}
+
+model ForumVote {
+  id           String   @id @default(cuid())
+  replyId      String
+  catProfileId String
+  value        Int
+  createdAt    DateTime @default(now())
+
+  reply      ForumReply @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  catProfile CatProfile @relation(fields: [catProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([replyId, catProfileId])
+  @@index([replyId])
+}

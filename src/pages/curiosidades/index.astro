@@ -1,13 +1,84 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import MainLayout from '../../layouts/MainLayout.astro';
+
+const posts = (await getCollection('curiosidades')).sort(
+  (a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf(),
+);
+
+const categories = [
+  { key: 'all', label: 'Todas' },
+  { key: 'alimentacion', label: 'Alimentación' },
+  { key: 'comportamiento', label: 'Comportamiento' },
+  { key: 'salud', label: 'Salud' },
+  { key: 'absurdas', label: 'Absurdas' },
+] as const;
+
+const filter = Astro.url.searchParams.get('cat') ?? 'all';
+const filtered =
+  filter === 'all' ? posts : posts.filter((p) => p.data.category === filter);
+
+const colors: Record<string, string> = {
+  alimentacion: 'from-mint-400 to-mint-200',
+  comportamiento: 'from-apricot-400 to-apricot-200',
+  salud: 'from-sky-400 to-sky-100',
+  absurdas: 'from-coral-400 to-apricot-300',
+};
 ---
 
-<BaseLayout title="Curiosidades">
-  <main class="mx-auto max-w-3xl px-6 py-16">
-    <h1 class="font-display text-4xl font-bold text-ink-900">Curiosidades</h1>
-    <p class="mt-3 font-semibold text-ink-500">
-      Placeholder · Content Collections SSG (Paso 7).
+<MainLayout title="Curiosidades">
+  <div class="mb-8">
+    <h1 class="font-display text-4xl font-bold">Curiosidades & hábitos</h1>
+    <p class="mt-2 max-w-2xl font-semibold text-ink-500">
+      Lecturas rápidas optimizadas para SEO. Alimentación, comportamiento, salud y rarezas felinas.
     </p>
-    <a href="/" class="mt-8 inline-block font-bold text-coral-600 hover:underline">← Volver</a>
-  </main>
-</BaseLayout>
+  </div>
+
+  <div class="mb-8 flex flex-wrap gap-2">
+    {
+      categories.map((c) => (
+        <a
+          href={c.key === 'all' ? '/curiosidades' : `/curiosidades?cat=${c.key}`}
+          class:list={[
+            'rounded-xl px-3 py-1.5 text-sm font-bold transition',
+            filter === c.key ? 'bg-ink-900 text-white' : 'bg-white/70 text-ink-700 hover:bg-white',
+          ]}
+        >
+          {c.label}
+        </a>
+      ))
+    }
+  </div>
+
+  <ul class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    {
+      filtered.map((post) => (
+        <li>
+          <a
+            href={`/curiosidades/${post.id}`}
+            class="group relative block overflow-hidden rounded-3xl border border-white/70 bg-white/65 p-5 shadow-sm backdrop-blur transition duration-300 hover:-translate-y-1.5 hover:border-coral-200 hover:bg-white hover:shadow-lg"
+          >
+            <div
+              class:list={[
+                'mb-4 h-2 w-16 rounded-full bg-gradient-to-r transition group-hover:w-24',
+                colors[post.data.category],
+              ]}
+            />
+            <p class="text-xs font-bold uppercase tracking-wide text-ink-500">
+              {post.data.category} · {post.data.readingMinutes} min
+            </p>
+            <h2 class="font-display mt-2 text-xl font-bold text-ink-900 group-hover:text-coral-600">
+              {post.data.title}
+            </h2>
+            <p class="mt-2 text-sm font-semibold text-ink-600">{post.data.description}</p>
+            {post.data.featured && (
+              <span class="absolute right-4 top-4 rounded-full bg-coral-100 px-2 py-0.5 text-[10px] font-bold uppercase text-coral-600">
+                Destacado
+              </span>
+            )}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</MainLayout>

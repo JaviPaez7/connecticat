@@ -1,13 +1,94 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import MainLayout from '../../layouts/MainLayout.astro';
+import { ForumCreateForm } from '../../components/react/ForumApp';
+import { getSession } from '../../lib/auth';
+import { prisma } from '../../lib/db';
+
+const session = await getSession(Astro.cookies);
+const category = Astro.url.searchParams.get('cat') as 'salud' | 'anecdotas' | 'productos' | null;
+
+const threads = await prisma.forumThread.findMany({
+  where: category ? { category } : undefined,
+  orderBy: { createdAt: 'desc' },
+  include: {
+    catProfile: { select: { name: true, avatarUrl: true } },
+    _count: { select: { replies: true } },
+  },
+});
+
+const cats = [
+  { key: null, label: 'Todas' },
+  { key: 'salud', label: 'Salud' },
+  { key: 'anecdotas', label: 'Anécdotas' },
+  { key: 'productos', label: 'Productos' },
+] as const;
+
+const labels: Record<string, string> = {
+  salud: 'Dudas de salud',
+  anecdotas: 'Anécdotas',
+  productos: 'Recomendaciones',
+};
 ---
 
-<BaseLayout title="Purr-Foro">
-  <main class="mx-auto max-w-3xl px-6 py-16">
-    <h1 class="font-display text-4xl font-bold text-ink-900">Purr-Foro</h1>
-    <p class="mt-3 font-semibold text-ink-500">
-      Placeholder · Hilos, respuestas y votos (Paso 8).
-    </p>
-    <a href="/" class="mt-8 inline-block font-bold text-coral-600 hover:underline">← Volver</a>
-  </main>
-</BaseLayout>
+<MainLayout title="Purr-Foro">
+  <div class="mb-8">
+    <h1 class="font-display text-4xl font-bold">Purr-Foro</h1>
+    <p class="mt-2 font-semibold text-ink-500">Comunidad, consultas y votos útiles.</p>
+  </div>
+
+  <div class="mb-6 flex flex-wrap gap-2">
+    {
+      cats.map((c) => (
+        <a
+          href={c.key ? `/foro?cat=${c.key}` : '/foro'}
+          class:list={[
+            'rounded-xl px-3 py-1.5 text-sm font-bold transition',
+            (c.key === null && !category) || c.key === category
+              ? 'bg-coral-500 text-white'
+              : 'bg-white/70 text-ink-700 hover:bg-white',
+          ]}
+        >
+          {c.label}
+        </a>
+      ))
+    }
+  </div>
+
+  <div class="grid gap-8 lg:grid-cols-[1fr_320px]">
+    <ul class="space-y-3">
+      {
+        threads.map((t) => (
+          <li>
+            <a
+              href={`/foro/${t.id}`}
+              class="block rounded-3xl border border-white/70 bg-white/70 p-5 transition hover:-translate-y-0.5 hover:border-coral-200 hover:bg-white"
+            >
+              <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-mint-600">
+                <span>{labels[t.category]}</span>
+                <span class="text-ink-300">·</span>
+                <span class="normal-case text-ink-500">{t._count.replies} respuestas</span>
+              </div>
+              <h2 class="font-display mt-2 text-xl font-bold text-ink-900">{t.title}</h2>
+              <p class="mt-1 line-clamp-2 text-sm font-semibold text-ink-600">{t.content}</p>
+              <div class="mt-3 flex items-center gap-2">
+                <img src={t.catProfile.avatarUrl} alt="" class="h-7 w-7 rounded-full object-cover" />
+                <span class="text-sm font-bold">{t.catProfile.name}</span>
+              </div>
+            </a>
+          </li>
+        ))
+      }
+      {
+        threads.length === 0 && (
+          <li class="rounded-3xl bg-white/70 p-8 text-center font-semibold text-ink-500">
+            No hay hilos en esta categoría.
+          </li>
+        )
+      }
+    </ul>
+
+    <aside>
+      <ForumCreateForm client:load canPost={Boolean(session?.activeCat)} />
+    </aside>
+  </div>
+</MainLayout>

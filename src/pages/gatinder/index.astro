@@ -1,13 +1,22 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import MainLayout from '../../layouts/MainLayout.astro';
+import GatinderApp from '../../components/react/GatinderApp';
+import { getSession } from '../../lib/auth';
+
+const session = await getSession(Astro.cookies);
 ---
 
-<BaseLayout title="Gatinder">
-  <main class="mx-auto max-w-3xl px-6 py-16">
-    <h1 class="font-display text-4xl font-bold text-ink-900">Gatinder</h1>
-    <p class="mt-3 font-semibold text-ink-500">
-      Placeholder · Isla React con swipe y matches (Paso 6).
+<MainLayout title="Gatinder">
+  <div class="mb-8 text-center">
+    <h1 class="font-display text-4xl font-bold">Gatinder</h1>
+    <p class="mt-2 font-semibold text-ink-500">
+      Desliza o usa los botones. Si ambos maúllan… ¡Hay Match!
     </p>
-    <a href="/" class="mt-8 inline-block font-bold text-coral-600 hover:underline">← Volver</a>
-  </main>
-</BaseLayout>
+    {
+      session?.activeCat && (
+        <p class="mt-2 text-sm font-bold text-mint-600">Jugando como {session.activeCat.name}</p>
+      )
+    }
+  </div>
+  <GatinderApp client:load canPlay={Boolean(session?.activeCat)} />
+</MainLayout>

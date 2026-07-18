@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 
-/** Lightweight React island — proves Framer Motion + client hydration. */
+/** Lightweight React island — Framer Motion presence on the landing. */
 export default function HeroSpark() {
   return (
     <motion.div
@@ -17,7 +17,7 @@ export default function HeroSpark() {
       >
         ✨
       </motion.span>
-      Paso 1 listo · Astro + React + Tailwind
+      Connecticat · listo para maullar
     </motion.div>
   );
 }

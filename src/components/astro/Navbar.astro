@@ -1,0 +1,120 @@
+---
+import { Cat, Heart, BookOpen, MessagesSquare, PawPrint, LogIn, UserRound } from '@lucide/astro';
+import BrandMark from './BrandMark.astro';
+import type { SessionContext } from '../../lib/auth';
+import { navLinks } from '../../lib/site';
+
+interface Props {
+  session: SessionContext | null;
+}
+
+const { session } = Astro.props;
+const path = Astro.url.pathname;
+
+const icons = {
+  '/feed': Cat,
+  '/gatinder': Heart,
+  '/curiosidades': BookOpen,
+  '/foro': MessagesSquare,
+} as const;
+---
+
+<header class="sticky top-0 z-50 border-b border-white/60 bg-white/70 backdrop-blur-xl">
+  <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+    <a href="/" class="shrink-0" aria-label="Connecticat inicio">
+      <BrandMark size="sm" />
+    </a>
+
+    <nav class="hidden items-center gap-1 md:flex" aria-label="Principal">
+      {
+        navLinks.map((link) => {
+          const Icon = icons[link.href as keyof typeof icons];
+          const active = path === link.href || path.startsWith(`${link.href}/`);
+          return (
+            <a
+              href={link.href}
+              class:list={[
+                'inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-bold transition',
+                active
+                  ? 'bg-coral-100 text-coral-700'
+                  : 'text-ink-700 hover:bg-white hover:text-coral-600',
+              ]}
+            >
+              {Icon && <Icon class="h-4 w-4" />}
+              {link.label}
+            </a>
+          );
+        })
+      }
+    </nav>
+
+    <div class="flex items-center gap-2">
+      {
+        session ? (
+          <>
+            {session.activeCat && (
+              <a
+                href="/perfil"
+                class="hidden items-center gap-2 rounded-xl bg-white/80 px-2.5 py-1.5 text-sm font-bold text-ink-700 shadow-sm sm:inline-flex"
+              >
+                <img
+                  src={session.activeCat.avatarUrl}
+                  alt=""
+                  class="h-7 w-7 rounded-full object-cover ring-2 ring-coral-200"
+                />
+                <span>{session.activeCat.name}</span>
+              </a>
+            )}
+            <a
+              href="/perfil"
+              class="inline-flex items-center gap-1.5 rounded-xl bg-ink-900 px-3 py-2 text-sm font-bold text-white transition hover:bg-coral-600"
+            >
+              <UserRound class="h-4 w-4" />
+              <span class="hidden sm:inline">Perfil</span>
+            </a>
+          </>
+        ) : (
+          <a
+            href="/auth/login"
+            class="inline-flex items-center gap-1.5 rounded-xl bg-ink-900 px-3 py-2 text-sm font-bold text-white transition hover:bg-coral-600"
+          >
+            <LogIn class="h-4 w-4" />
+            Entrar
+          </a>
+        )
+      }
+    </div>
+  </div>
+
+  <!-- Mobile nav -->
+  <nav
+    class="flex gap-1 overflow-x-auto border-t border-white/50 px-2 py-2 md:hidden"
+    aria-label="Móvil"
+  >
+    {
+      navLinks.map((link) => {
+        const Icon = icons[link.href as keyof typeof icons];
+        const active = path === link.href || path.startsWith(`${link.href}/`);
+        return (
+          <a
+            href={link.href}
+            class:list={[
+              'inline-flex shrink-0 items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold',
+              active ? 'bg-coral-100 text-coral-700' : 'text-ink-600',
+            ]}
+          >
+            {Icon && <Icon class="h-3.5 w-3.5" />}
+            {link.label}
+          </a>
+        );
+      })
+    }
+    <a
+      href={session ? '/perfil' : '/auth/login'}
+      class="inline-flex shrink-0 items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold text-ink-600"
+    >
+      <PawPrint class="h-3.5 w-3.5" />
+      {session ? 'Perfil' : 'Auth'}
+    </a>
+  </nav>
+</header>
